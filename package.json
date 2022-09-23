@@ -1,6 +1,6 @@
 {
   "name": "@softphant/axios-wrapper",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Apisauce-like API for axios",
   "files": [
     "lib/**/*"
@@ -26,6 +26,7 @@
     "axios": "^0.27.2"
   },
   "devDependencies": {
+    "jest": "^29.0.3",
     "prettier": "^2.7.1",
     "tslint": "^6.1.3",
     "tslint-config-prettier": "^1.18.0",

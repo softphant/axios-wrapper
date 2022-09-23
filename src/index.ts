@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 enum PROBLEM_CODE {
     CLIENT_ERROR = 'CLIENT_ERROR',
@@ -16,7 +16,7 @@ export interface ApiErrorResponse<T> {
     originalError: AxiosError
 
     data?: T
-    status?: number
+    status: number
     headers?: any
     config?: AxiosRequestConfig
     duration?: number
@@ -27,8 +27,8 @@ export interface ApiOkResponse<T> {
     problem: null
     originalError: null
 
-    data: T
-    status?: number
+    data: T 
+    status: number
     headers?: any
     config?: AxiosRequestConfig
     duration?: number
@@ -40,16 +40,29 @@ export interface ApiConfig {
     headers?: Record<string, any>
 }
 
-export type ApiResponse<T> = ApiErrorResponse<T> | ApiOkResponse<T>
+export type ApiResponse<ResponseBody, ErrorBody = any> = ApiErrorResponse<ErrorBody> | ApiOkResponse<ResponseBody>
 
-export const createApi = (config: ApiConfig) => {
+type Methods = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'
+
+type ApiRequestFunction<M extends Methods> = <T = any, E = any>(...params: (Parameters<AxiosInstance[M]>)) => Promise<ApiResponse<T, E>>
+
+interface ApiInstance extends Omit<AxiosInstance, Methods> {
+    get: ApiRequestFunction<'get'>
+    post: ApiRequestFunction<'post'>
+    put: ApiRequestFunction<'put'>
+    delete: ApiRequestFunction<'delete'>
+    patch: ApiRequestFunction<'patch'>
+    options: ApiRequestFunction<'options'>
+    head: ApiRequestFunction<'head'>
+}
+
+export const createApi = (config: ApiConfig): ApiInstance => {
     const api = axios.create({
         baseURL: config.url,
         timeout: config.timeout,
         headers: config.headers,
     })
     api.interceptors.response.use(interceptor, responseError)
-
     return api
 }
 
@@ -69,9 +82,9 @@ export const getProblemFromError = (error: AxiosError) => {
     return PROBLEM_CODE.UNKNOWN_ERROR
 }
 
-const interceptor = (response: AxiosResponse) => {
+const interceptor = <T>(response: AxiosResponse): ApiOkResponse<T> => {
     // Any status code that lie within the range of 2xx cause this function to trigger
-    return { ...response, data: response.data ?? {}, ok: true }
+    return { ...response, data: response.data ?? {}, ok: true, problem: null, originalError: null }
 }
 
 /* Typescript hint */
