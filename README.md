@@ -1,5 +1,7 @@
 # Axios wrapper
 
+[![npm module](https://badge.fury.io/js/@softphant%2Faxios-wrapper.svg)](https://www.npmjs.org/package/@softphant/axios-wrapper)
+
 Wrapper was designed to use mostly Apisauce-compatible API, but latest axios version.
 
 Note: This API does not touch anything else but response format. No errors thrown, response data can always be typed.
