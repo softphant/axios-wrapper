@@ -1,6 +1,7 @@
 # Axios wrapper
 
 Wrapper was designed to use mostly Apisauce-compatible API, but latest axios version.
+No errors thrown, response data can always be strictly typed.
 
 ## Basic usage
 
