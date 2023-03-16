@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
 enum PROBLEM_CODE {
     CLIENT_ERROR = 'CLIENT_ERROR',
@@ -18,19 +18,19 @@ export interface ApiErrorResponse<T> {
     data?: T
     status: number
     headers?: any
-    config?: AxiosRequestConfig
+    config?: InternalAxiosRequestConfig
     duration?: number
 }
 
-export interface ApiOkResponse<T> {
+export interface ApiOkResponse<T> extends AxiosResponse<T> {
     ok: true
     problem: null
     originalError: null
-
-    data: T 
+    statusText: string
+    data: T
     status: number
-    headers?: any
-    config?: AxiosRequestConfig
+    headers: AxiosResponse<any>['headers']
+    config: InternalAxiosRequestConfig
     duration?: number
 }
 
@@ -44,9 +44,11 @@ export type ApiResponse<ResponseBody, ErrorBody = any> = ApiErrorResponse<ErrorB
 
 type Methods = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head'
 
-type ApiRequestFunction<M extends Methods> = <T = any, E = any>(...params: (Parameters<AxiosInstance[M]>)) => Promise<ApiResponse<T, E>>
+type ApiRequestFunction<M extends Methods> = <T = unknown, E = any>(
+    ...params: Parameters<AxiosInstance[M]>
+) => Promise<ApiResponse<T, E>>
 
-interface ApiInstance extends Omit<AxiosInstance, Methods> {
+export interface ApiInstance extends Omit<AxiosInstance, Methods> {
     get: ApiRequestFunction<'get'>
     post: ApiRequestFunction<'post'>
     put: ApiRequestFunction<'put'>
@@ -74,17 +76,23 @@ export const getProblemFromStatus = (status: number | undefined): PROBLEM_CODE |
     return PROBLEM_CODE.UNKNOWN_ERROR
 }
 
-export const getProblemFromError = (error: AxiosError) => {
+export const getProblemFromError = <T, D>(error: AxiosError<T, D>) => {
     if (error.message === 'Network Error') return PROBLEM_CODE.NETWORK_ERROR
-    if (axios.isCancel(error)) return PROBLEM_CODE.CANCEL_ERROR
+    if (axios.isCancel(error) as any) return PROBLEM_CODE.CANCEL_ERROR // Type issue: https://github.com/axios/axios/issues/5153
     if (!error.code) return getProblemFromStatus(error.response?.status)
     if (error.code === 'ECONNABORTED') return PROBLEM_CODE.TIMEOUT_ERROR
     return PROBLEM_CODE.UNKNOWN_ERROR
 }
 
-const interceptor = <T>(response: AxiosResponse): ApiOkResponse<T> => {
+const interceptor = <T>(response: AxiosResponse<T>): ApiOkResponse<T> => {
     // Any status code that lie within the range of 2xx cause this function to trigger
-    return { ...response, data: response.data ?? {}, ok: true, problem: null, originalError: null }
+    return {
+        ...response,
+        data: response.data ?? ({} as T),
+        ok: true,
+        problem: null,
+        originalError: null,
+    }
 }
 
 /* Typescript hint */
