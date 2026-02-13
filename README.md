@@ -4,6 +4,15 @@ This package has been moved to a new organization.
 
 ➡ New home: https://github.com/kallinen/openapi-axios-client
 
+➡ New NPM package: https://www.npmjs.com/package/@kallinen/openapi-axios-client
+
+
+Install the new package:
+
+```bash
+npm install @kallinen/openapi-axios-client
+```
+
 Please update your dependencies and bookmarks to the new repository.
 
 This repository is now archived and will no longer receive updates.
