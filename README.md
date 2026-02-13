@@ -1,3 +1,13 @@
+# ⚠️ Repository moved
+
+This package has been moved to a new organization.
+
+➡ New home: https://github.com/kallinen/openapi-axios-client
+
+Please update your dependencies and bookmarks to the new repository.
+
+This repository is now archived and will no longer receive updates.
+
 # Axios wrapper
 
 [![npm module](https://badge.fury.io/js/@softphant%2Faxios-wrapper.svg)](https://www.npmjs.org/package/@softphant/axios-wrapper)
